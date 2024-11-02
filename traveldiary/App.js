@@ -9,6 +9,7 @@ import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
 import CreateEntryScreen from './screens/CreateEntryScreen';
 import ViewEntryScreen from './screens/ViewEntryScreen';
+import EditEntryScreen from './screens/EditEntryScreen';
 
 const Stack = createStackNavigator();
 
@@ -21,6 +22,7 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="CreateEntry" component={CreateEntryScreen} />
         <Stack.Screen name="ViewEntry" component={ViewEntryScreen} />
+        <Stack.Screen name="EditEntryScreen" component={EditEntryScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

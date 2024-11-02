@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, Alert } from 'react-native';
+import React, { useState } from 'react'; 
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { db, storage } from '../firebaseConfig';
 import { collection, addDoc } from 'firebase/firestore';
@@ -10,7 +10,7 @@ const CreateEntryScreen = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // Data atual padrão no formato YYYY-MM-DD
+  const [date, setDate] = useState(''); 
   const [imageUri, setImageUri] = useState(null);
   const navigation = useNavigation();
 
@@ -28,109 +28,176 @@ const CreateEntryScreen = () => {
   };
 
   const handleSubmit = async () => {
-    // Validação para garantir que todos os campos sejam preenchidos
-    if (!title || !description || !location) {
+    if (!title || !description || !location || !date) {
       Alert.alert('Preencha todos os campos!');
       return;
     }
 
     try {
       let imageUrl = null;
-
-      // Se houver uma imagem, faça o upload
       if (imageUri) {
         const response = await fetch(imageUri);
         const blob = await response.blob();
-        const storageRef = ref(storage, `images/${Date.now()}`); // Usar timestamp para nome único
+        const storageRef = ref(storage, `images/${Date.now()}`);
         await uploadBytes(storageRef, blob);
-        
-        // Obter a URL da imagem após o upload
         imageUrl = await getDownloadURL(storageRef);
-        console.log('Imagem carregada com sucesso:', imageUrl);
       }
 
-      // Adiciona a entrada ao Firestore
       await addDoc(collection(db, 'entries'), {
         title,
         description,
         location,
-        date, // Se você decidir usar a data, agora ela será salva
-        imageUrl, // URL da imagem, que pode ser nulo se nenhuma imagem foi selecionada
+        date,
+        imageUrl,
         createdAt: new Date(),
       });
 
-      // Limpa os campos após a criação
+      // Limpa os campos após a criação da entrada
       setTitle('');
       setDescription('');
       setLocation('');
-      setDate(new Date().toISOString().split('T')[0]); // Reseta a data para a atual
+      setDate('');
       setImageUri(null);
+
       Alert.alert('Entrada criada com sucesso!');
-      navigation.navigate('Home'); 
+      navigation.navigate('ViewEntry'); // Navega para a tela de visualização após criar a entrada
     } catch (error) {
       console.error("Erro ao adicionar documento: ", error);
       Alert.alert('Erro ao criar entrada. Tente novamente.');
     }
   };
 
+  // Função para cancelar a criação da entrada e voltar para a tela anterior
+  const handleCancel = () => {
+    navigation.goBack(); // Retorna para a tela anterior
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Criar Nova Entrada</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Título"
-        value={title}
-        onChangeText={setTitle}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Descrição"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Localização"
-        value={location}
-        onChangeText={setLocation}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Data (YYYY-MM-DD)"
-        value={date}
-        onChangeText={setDate}
-      />
-      <Button title="Selecionar Imagem" onPress={handleImagePicker} />
-      {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
-      <Button title="Criar Entrada" onPress={handleSubmit} />
+    <View style={styles.outerContainer}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Criar Nova Entrada</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Título"
+          value={title}
+          onChangeText={setTitle}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Descrição"
+          value={description}
+          onChangeText={setDescription}
+          multiline
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Localização"
+          value={location}
+          onChangeText={setLocation}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Data (DD/MM/AAAA)"
+          value={date}
+          onChangeText={setDate}
+        />
+        
+        <TouchableOpacity style={styles.button} onPress={handleImagePicker}>
+          <Text style={styles.buttonText}>Selecionar Imagem</Text>
+        </TouchableOpacity>
+
+        {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
+
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>Criar Entrada</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <Text style={styles.cancelButtonText}>Cancelar</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingLeft: 8,
-  },
-  image: {
-    width: '100%',
-    height: 200,
-    marginVertical: 10,
-  },
+    outerContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#F5F5F5',
+    },
+  
+    container: {
+      width: '90%',
+      padding: 20,
+      borderRadius: 10,
+      backgroundColor: '#FFFFFF',
+      alignItems: 'center',
+      elevation: 5,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+    },
+  
+    title: {
+      fontSize: 24,
+      marginBottom: 20,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      color: '#333',
+    },
+  
+    input: {
+      width: '100%',
+      height: 50,
+      borderColor: 'gray',
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      marginBottom: 10,
+      backgroundColor: '#FFFFFF',
+    },
+  
+    button: {
+      width: '100%',
+      backgroundColor: '#1E90FF',
+      paddingVertical: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginTop: 10,
+    },
+
+    cancelButton: {
+      width: '100%',
+      backgroundColor: '#FF6347', 
+      paddingVertical: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginTop: 10,
+    },
+  
+    buttonText: {
+      color: '#FFFFFF',
+      fontSize: 18,
+      fontWeight: 'bold',
+    },
+
+    cancelButtonText: {
+      color: '#FFFFFF',
+      fontSize: 18,
+      fontWeight: 'bold',
+    },
+  
+    image: {
+      width: '50%',
+      height: 200,
+      borderRadius: 8,
+      marginVertical: 10,
+    },
 });
 
 export default CreateEntryScreen;
+
 
