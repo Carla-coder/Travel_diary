@@ -112,7 +112,7 @@
 // export default ViewEntryScreen;
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Alert} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
@@ -183,28 +183,29 @@ const ViewEntryScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Lista de Entradas</Text>
-      <FlatList
-        data={entries}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.entryContainer}>
-            {item.imageUrl && renderImage(item)}
-            <View style={styles.textContainer}>
-              <Text style={styles.entryTitle}>{item.title}</Text>
-              <Text style={styles.entryDescription}>{item.description}</Text>
-              <Text style={styles.entryDate}>{item.date}</Text>
-              {item.location && <Text style={styles.entryLocation}>Localização: {item.location}</Text>}
+      <View style={styles.listContainer}> {/* Limita a altura do FlatList */}
+        <FlatList
+          data={entries}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.entryContainer}>
+              {item.imageUrl && renderImage(item)}
+              <View style={styles.textContainer}>
+                <Text style={styles.entryTitle}>{item.title}</Text>
+                <Text style={styles.entryDescription}>{item.description}</Text>
+                <Text style={styles.entryDate}>{item.date}</Text>
+                {item.location && <Text style={styles.entryLocation}>Localização: {item.location}</Text>}
+              </View>
+              <TouchableOpacity onPress={() => navigateToEdit(item)} style={styles.editButton}>
+                <Text style={styles.editButtonText}>Editar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => deleteEntry(item.id)} style={styles.deleteButton}>
+                <Text style={styles.deleteButtonText}>Excluir</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => navigateToEdit(item)} style={styles.editButton}>
-              <Text style={styles.editButtonText}>Editar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => deleteEntry(item.id)} style={styles.deleteButton}>
-              <Text style={styles.deleteButtonText}>Excluir</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        contentContainerStyle={styles.listContainer}
-      />
+          )}
+        />
+      </View>
     </View>
   );
 };
@@ -223,7 +224,12 @@ const styles = StyleSheet.create({
     color: '#333'
   },
   listContainer: {
-    paddingBottom: 20,
+    // paddingBottom: 20,
+    maxHeight: 300, // Limita a altura para habilitar a rolagem
+    width: '100%',
+    backgroundColor: '#FFF',
+    borderRadius: 5,
+    overflow: 'hidden',
   },
   entryContainer: { 
     flexDirection: 'row', 
