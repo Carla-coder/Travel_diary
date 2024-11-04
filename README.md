@@ -105,7 +105,7 @@ npm install
 ```bash
 npm run web
 ```
-4. Quando a tela de LOgin abrir, faça seu cadastro:
+4. Quando a tela de Login abrir, faça seu cadastro:
 
 ```bash
 exemplo: seunome@email.com e senha com 6 dígitos
