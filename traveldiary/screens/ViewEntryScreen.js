@@ -1,9 +1,20 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  Alert,
+  Dimensions,
+} from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { db } from "../firebaseConfig";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Alert} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { db } from '../firebaseConfig';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+// Obter as dimensões da tela
+const screenHeight = Dimensions.get("window").height;
 
 const ViewEntryScreen = ({ navigation }) => {
   const [entries, setEntries] = useState([]);
@@ -12,11 +23,11 @@ const ViewEntryScreen = ({ navigation }) => {
   // Função para buscar as entradas
   const fetchEntries = async () => {
     try {
-      const entriesCollection = collection(db, 'entries');
+      const entriesCollection = collection(db, "entries");
       const entrySnapshot = await getDocs(entriesCollection);
-      const entryList = entrySnapshot.docs.map(doc => ({
+      const entryList = entrySnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setEntries(entryList);
     } catch (error) {
@@ -28,7 +39,7 @@ const ViewEntryScreen = ({ navigation }) => {
   // Função para excluir uma entrada
   const deleteEntry = async (entryId) => {
     try {
-      await deleteDoc(doc(db, 'entries', entryId));
+      await deleteDoc(doc(db, "entries", entryId));
       setEntries(entries.filter((entry) => entry.id !== entryId));
       Alert.alert("Sucesso", "Entrada excluída com sucesso!");
     } catch (error) {
@@ -46,8 +57,8 @@ const ViewEntryScreen = ({ navigation }) => {
   // Renderização da imagem
   const renderImage = (item) => {
     let uri;
-    if (item.imageUrl === 'villa') {
-      uri = require('../assets/images/villa.png');
+    if (item.imageUrl === "villa") {
+      uri = require("../assets/images/villa.png");
     } else {
       uri = { uri: item.imageUrl };
     }
@@ -56,7 +67,7 @@ const ViewEntryScreen = ({ navigation }) => {
 
   // Função para navegar à tela de edição
   const navigateToEdit = (entry) => {
-    navigation.navigate('EditEntryScreen', { entry });
+    navigation.navigate("EditEntryScreen", { entry });
   };
 
   // Verifica erro e exibe a mensagem de erro
@@ -71,7 +82,9 @@ const ViewEntryScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Lista de Entradas</Text>
-      <View style={styles.listContainer}> {/* Limita a altura do FlatList */}
+      <View style={styles.listContainer}>
+        {" "}
+        {/* Limita a altura do FlatList */}
         <FlatList
           data={entries}
           keyExtractor={(item) => item.id}
@@ -82,112 +95,141 @@ const ViewEntryScreen = ({ navigation }) => {
                 <Text style={styles.entryTitle}>{item.title}</Text>
                 <Text style={styles.entryDescription}>{item.description}</Text>
                 <Text style={styles.entryDate}>{item.date}</Text>
-                {item.location && <Text style={styles.entryLocation}>Localização: {item.location}</Text>}
+                {item.location && (
+                  <Text style={styles.entryLocation}>
+                    Localização: {item.location}
+                  </Text>
+                )}
               </View>
-              <TouchableOpacity onPress={() => navigateToEdit(item)} style={styles.editButton}>
+              <TouchableOpacity
+                onPress={() => navigateToEdit(item)}
+                style={styles.editButton}
+              >
                 <Text style={styles.editButtonText}>Editar</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => deleteEntry(item.id)} style={styles.deleteButton}>
+              <TouchableOpacity
+                onPress={() => deleteEntry(item.id)}
+                style={styles.deleteButton}
+              >
                 <Text style={styles.deleteButtonText}>Excluir</Text>
               </TouchableOpacity>
             </View>
           )}
         />
       </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          © 2024 - Desenvolvido por Carla Coder
+        </Text>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    paddingHorizontal: 16, 
-    backgroundColor: '#f9f9f9'
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    backgroundColor: "#f9f9f9",
   },
-  title: { 
-    fontSize: 24, 
-    fontWeight: 'bold', 
-    marginBottom: 20, 
-    alignSelf: 'center', 
-    color: '#333'
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    alignSelf: "center",
+    color: "#333",
   },
   listContainer: {
-    // paddingBottom: 20,
-    maxHeight: 300, // Limita a altura para habilitar a rolagem
-    width: '100%',
-    backgroundColor: '#FFF',
+    maxHeight: screenHeight * 0.7, // Ajuste automático para 70% da altura da tela
+    width: "100%",
+    backgroundColor: "#FFF",
     borderRadius: 5,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
-  entryContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    padding: 12, 
-    marginVertical: 8, 
-    backgroundColor: '#fff', 
-    borderRadius: 8, 
-    shadowColor: '#000',
+  entryContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    marginVertical: 8,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 3, 
-    elevation: 3
+    shadowRadius: 3,
+    elevation: 3,
   },
-  image: { 
-    width: 60,    
-    height: 60,   
-    borderRadius: 8, 
-    marginRight: 12
+  image: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
   },
   textContainer: {
     flex: 1,
   },
-  entryTitle: { 
-    fontWeight: 'bold', 
-    fontSize: 16, 
-    color: '#333'
+  entryTitle: {
+    fontWeight: "bold",
+    fontSize: 14,
+    color: "#333",
   },
-  entryDescription: { 
-    color: '#666', 
-    fontSize: 14, 
-    marginTop: 4
+  entryDescription: {
+    color: "#666",
+    fontSize: 14,
+    marginTop: 4,
   },
-  entryDate: { 
-    color: '#999', 
-    fontSize: 12, 
-    marginTop: 2 
+  entryDate: {
+    color: "#999",
+    fontSize: 12,
+    marginTop: 2,
   },
-  entryLocation: { 
-    color: '#666', 
-    fontSize: 12, 
-    marginTop: 2 
+  entryLocation: {
+    color: "#666",
+    fontSize: 12,
+    marginTop: 2,
   },
   editButton: {
-    backgroundColor: '#1e90ff', 
+    backgroundColor: "#1e90ff",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 5,
-    marginLeft: 10
+    marginLeft: 10,
   },
   editButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: 'bold'
+    fontWeight: "bold",
   },
   deleteButton: {
-    backgroundColor: '#ff5c5c',
+    backgroundColor: "#ff5c5c",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 5,
-    marginLeft: 10
+    marginLeft: 10,
   },
   deleteButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: 'bold'
+    fontWeight: "bold",
   },
-  error: { 
-    color: 'red', 
-    textAlign: 'center' 
+  error: {
+    color: "red",
+    textAlign: "center",
+  },
+  footer: {
+    backgroundColor: "#1e90ff",
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  footerText: {
+    color: "#FFF",
+    fontSize: 14,
   },
 });
 
